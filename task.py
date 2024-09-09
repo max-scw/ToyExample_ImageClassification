@@ -20,7 +20,7 @@ def train_model(
         dataloader_training: DataLoader,
         n_epochs: int,
         dataloader_validation: DataLoader = None,
-        criterion=nn.Module,
+        criterion: nn.Module = nn.CrossEntropyLoss(),
         optimizer=None,
         device: str = "cpu"
 ) -> nn.Module:
@@ -58,7 +58,7 @@ def train_model(
 
 
 def build_model(
-        n_out: int = 1000,  # n
+        n_out: int = 1000,
         freeze_backbone: bool = True
 ) -> nn.Module:
     """

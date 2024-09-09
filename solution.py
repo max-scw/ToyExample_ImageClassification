@@ -16,7 +16,7 @@ from tqdm import tqdm
 from timeit import default_timer
 import copy
 
-from typing import Union
+from typing import Union, Tuple, List, Dict, Any
 
 
 # Training function
@@ -25,10 +25,10 @@ def train_model(
     dataloader_training: DataLoader,
     n_epochs: int,
     dataloader_validation: DataLoader = None,
-    criterion=nn.Module,
+    criterion: nn.Module = nn.CrossEntropyLoss(),
     optimizer=None,
     device: Union[str, int] = "cpu",
-) -> nn.Module:
+) -> Tuple[nn.Module, List[Dict[str, Any]]]:
     """
     Trains a PyTorch model
     :param model: PyTorch model to train
@@ -61,7 +61,10 @@ def train_model(
                 dataloader = dataloader_training
             else:
                 model.eval()  # Set model to evaluate mode
-                dataloader = dataloader_validation if dataloader_validation else dataloader_training
+                if dataloader_validation is None:
+                    continue
+                else:
+                    dataloader = dataloader_validation
 
             running_loss = 0.0
             running_len = 0
@@ -101,7 +104,7 @@ def train_model(
             desc[f"{phase}_loss"] = epoch_loss
 
             # deep copy the model
-            if not is_training and (epoch_loss < best_loss):
+            if ((not is_training) and (dataloader_validation is not None)) and (epoch_loss < best_loss):
                 best_loss = epoch_loss
                 best_model_weights = copy.deepcopy(model.state_dict())
 
