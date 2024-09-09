@@ -7,9 +7,12 @@ from torchvision.datasets import MNIST
 from torch.utils.data import DataLoader
 # optimizer
 from torch.optim import Adam
+# image processing
+from PIL import Image
 
 import copy
 from timeit import default_timer
+
 
 
 def train_model(
@@ -77,10 +80,8 @@ def build_model(
     return model
 
 
-def expand_channels(img: torch.Tensor) -> torch.Tensor:
-    """Function to repeat the single grayscale channel to 3 channels"""
-    # It is necessary to outsource this functionality to a proper function because a wrapper with a lambda function cannot be used in multiplrocessing
-    return img.repeat(3, 1, 1)
+def grayscale_to_color(image: Image) -> Image:
+    return image.convert("RGB")
 
 
 if __name__ == "__main__":
@@ -93,9 +94,9 @@ if __name__ == "__main__":
 
     # corresponding transforms for MobileNet
     transform = transforms.Compose([
+        transforms.Lambda(grayscale_to_color),  # Add channel expansion
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
-        transforms.Lambda(expand_channels),  # Repeat the single channel to create 3 channels
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 

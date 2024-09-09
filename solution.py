@@ -153,7 +153,6 @@ if __name__ == "__main__":
         models.MobileNet_V3_Small_Weights.IMAGENET1K_V1.transforms()
     ])
 
-
     # Load the MNIST dataset training & test split
     dataset_training = MNIST(root="./data", train=True, transform=transform, download=True)
     dataset_test = MNIST(root="./data", train=False, transform=transform, download=True)
