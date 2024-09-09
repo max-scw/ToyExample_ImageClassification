@@ -10,6 +10,8 @@ from torch.utils.data import DataLoader, random_split
 # optimizer
 from torch.optim import Adam
 
+from PIL import Image
+
 from tqdm import tqdm
 from timeit import default_timer
 import copy
@@ -113,9 +115,8 @@ def train_model(
     return model, history
 
 
-def expand_channels(img):
-    """Function to repeat the single grayscale channel to 3 channels"""
-    return img.repeat(3, 1, 1)
+def grayscale_to_color(image: Image) -> Image:
+    return image.convert("RGB")
 
 
 def build_model(n_out: int = 1000, freeze_backbone: bool = True) -> nn.Module:
@@ -145,16 +146,13 @@ if __name__ == "__main__":
     # build model (Modify the classifier to fit MNIST i.e. to 10 classes)
     mobilenet = build_model(10)
 
-    # corresponding transforms for MobileNet
-    transform = transforms.Compose(
-        [
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-            # transforms.Normalize((0.1307,), (0.3081,))  # Normalize with MNIST mean and std
-            transforms.Lambda(expand_channels),  # Repeat the single channel to create 3 channels
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ]
-    )
+    # corresponding transforms for MobileNet (extended by a channel expansion because MNIST provides grayscale images
+    # but MobileNet expects inputs with 3 channels)
+    transform = transforms.Compose([
+        transforms.Lambda(grayscale_to_color),  # Add channel expansion
+        models.MobileNet_V3_Small_Weights.IMAGENET1K_V1.transforms()
+    ])
+
 
     # Load the MNIST dataset training & test split
     dataset_training = MNIST(root="./data", train=True, transform=transform, download=True)
